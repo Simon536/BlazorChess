@@ -1,0 +1,272 @@
+﻿@page "/chess"
+@using ChessEngine
+@using System.ComponentModel
+
+@setup
+
+<PageTitle>Chess Engine</PageTitle>
+
+<h1>My Chess Engine</h1>
+
+<div>
+    @for (int k = 0; k <= 56; k += 8)
+    {
+        <p style="margin-bottom:0px">
+            @foreach (int i in Enumerable.Range(0, 8))
+            {
+                byte buttonNumber = Convert.ToByte(i + k);
+
+                <button @onmouseout=MouseExit
+                @onmouseover="(args) => MouseEnter(args, buttonNumber)"
+                @onclick="(args) => MouseClick(args, buttonNumber)"
+                id="b@(k+i)"
+                style="background-color:@(ChessBoard.Squares[i+k].bgColour);font-size:40px;height:60px;width:60px">
+                    @(Board.GetPieceCode(ChessBoard.Squares[k+i].piece))
+                </button>
+
+            }
+        </p>
+    }
+</div>
+
+<p>@messageToUser</p>
+
+@code {
+    private Board ChessBoard = Board.setStartingPosition();
+
+    bool pieceSelected = false;
+    byte squareSelected;
+
+    bool gameOver = false;
+
+    private BackgroundWorker bgThread = new BackgroundWorker();
+
+    private string messageToUser = "";
+
+    private void setup()
+    {
+        ChessBoard.WhosMove = ChessPieceColour.White;
+
+        //  Set up background worker
+        bgThread.WorkerReportsProgress = true;
+        bgThread.DoWork += new DoWorkEventHandler(worker_doWork);
+        bgThread.ProgressChanged += new ProgressChangedEventHandler(worker_UpdateProgress);
+        bgThread.RunWorkerCompleted += new RunWorkerCompletedEventHandler(worker_taskComplete);
+    }
+
+    protected void MouseEnter(MouseEventArgs mouseEventArgs, byte buttonID)
+    {
+        List<byte> openMoves = AI.getMoves(ChessBoard, buttonID);
+
+        foreach (byte m in openMoves)
+        {
+            if (ChessBoard.Squares[m].bgColour != "f8adf2")
+            {
+                ChessBoard.Squares[m].changeColour("#adf2f8");
+            }
+        }
+    }
+
+    protected void MouseExit(MouseEventArgs mouseEventArgs)
+    {
+        for (byte m = 0; m < 64; m++)
+        {
+            if (ChessBoard.Squares[m].bgColour != "f8adf2")
+            {
+                ChessBoard.Squares[m].changeColour("#dddddd");
+            }
+        }
+    }
+
+    protected void MouseClick(MouseEventArgs mouseEventArgs, byte buttonID)
+    {
+        if (!bgThread.IsBusy && !gameOver && (ChessBoard.WhosMove == ChessPieceColour.White))
+        {
+            //  No piece is selected yet
+            if (!pieceSelected)
+            {
+                //  Get the square
+                squareSelected = buttonID;
+
+                //  Get the piece
+                Piece? piece = ChessBoard.Squares[squareSelected].piece;
+
+                //  If it is a white piece
+                if (piece != null && piece.pieceColour == ChessPieceColour.White)
+                {
+                    //  Change button color
+                    ChessBoard.Squares[squareSelected].changeColour("f8adf2");
+
+                    //  Toggle pieceSelected
+                    pieceSelected = true;
+                }
+            }
+            //  A piece is already selected. This is the destination block...
+            else
+            {
+                bool thisMoveIsValid = MoveHandler.validMove(ChessBoard, squareSelected, buttonID, ChessPieceColour.White);
+                if (thisMoveIsValid)
+                {
+                    Board copyOfBoard = ChessBoard.FastCopy();
+                    MoveHandler.movePiece(ChessBoard, squareSelected, buttonID);
+                    ChessBoard.testForCheck();
+                    if (ChessBoard.WhiteInCheck)
+                    {
+                        //  This move is not valid because white is now in check
+                        ChessBoard = copyOfBoard.FastCopy();
+                        messageToUser = "Move invalid...";
+
+                        pieceSelected = false;
+                    }
+                    else
+                    {
+                        pieceSelected = false;
+                        ChessBoard.WhosMove = ChessPieceColour.Black;
+
+                        //  Start worker
+                        //bgThread.RunWorkerAsync();
+
+                        AI.move(ChessBoard);
+
+                        ChessBoard.scoreBoard();
+
+                        testForCheckmateAndStalemate();
+                    }
+                }
+                else
+                {
+                    pieceSelected = false;
+
+                    // Reset square colours
+                    for (byte i = 0; i < 64; i++)
+                    {
+                        if (ChessBoard.Squares[i].bgColour == "f8adf2")
+                        {
+                            ChessBoard.Squares[i].changeColour("#dddddd");
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (bgThread.IsBusy)
+            {
+                messageToUser = "AI moving. Please be patient...";
+            }
+            if (gameOver)
+            {
+                messageToUser = "The game is already over!";
+            }
+            if(ChessBoard.WhosMove == ChessPieceColour.Black)
+            {
+                messageToUser = "It is Black's turn to move";
+            }
+        }
+    }
+
+    void worker_doWork(object sender, DoWorkEventArgs e)
+    {
+        //  Report progress
+        bgThread.ReportProgress(25);
+
+        //  Call the AI move method.
+        AI.move(ChessBoard);
+
+        //  Report progress
+        bgThread.ReportProgress(100);
+
+        //  When complete, change the result to 'done'.
+        e.Result = "Done";
+    }
+
+    void worker_taskComplete(object sender, RunWorkerCompletedEventArgs e)
+    {
+        testForCheckmateAndStalemate();
+    }
+
+    void worker_UpdateProgress(object sender, ProgressChangedEventArgs e)
+    {
+        if (e.ProgressPercentage < 100)
+        {
+            messageToUser = "Thinking...";
+        }
+        else
+        {
+            messageToUser = "Ready";
+        }
+    }
+
+    private void testForCheckmateAndStalemate()
+    {
+        //  Run tests for check and stalemate
+        ChessBoard.testForCheck();
+        if (!ChessBoard.BlackInCheck && !ChessBoard.WhiteInCheck)
+        {
+            ChessBoard.testForStalemate();
+        }
+
+        if (ChessBoard.BlackInCheck)
+        {
+            //  Test for checkmate here
+            List<byte> blackPositions = AI.getPiecePositions(ChessBoard, ChessPieceColour.Black);
+            List<Tuple<byte, byte>> blackPosMoves = AI.getPossibleMoves(ChessBoard, blackPositions);
+            Board copyToTestForMate;
+
+            ChessBoard.BlackCheckMated = true;
+
+            foreach (Tuple<byte, byte> BlackMove in blackPosMoves)
+            {
+                copyToTestForMate = ChessBoard.FastCopy();
+
+                MoveHandler.movePiece(copyToTestForMate, BlackMove.Item1, BlackMove.Item2);
+
+                copyToTestForMate.testForCheck();
+                if (!copyToTestForMate.BlackInCheck)
+                {
+                    ChessBoard.BlackCheckMated = false;
+                    break;
+                }
+            }
+        }
+
+        if (ChessBoard.BlackCheckMated)
+        {
+            messageToUser = "White has won by checkmate";
+            gameOver = true;
+        }
+        if (ChessBoard.WhiteInCheck)
+        {
+            messageToUser = "Warning: You are in check.";
+
+            List<byte> whitePositions = AI.getPiecePositions(ChessBoard, ChessPieceColour.White);
+            List<Tuple<byte, byte>> whitePosMoves = AI.getPossibleMoves(ChessBoard, whitePositions);
+            Board copyToTestForMate;
+
+            ChessBoard.WhiteCheckMated = true;
+
+            foreach (Tuple<byte, byte> WhiteMove in whitePosMoves)
+            {
+                copyToTestForMate = ChessBoard.FastCopy();
+                MoveHandler.movePiece(copyToTestForMate, WhiteMove.Item1, WhiteMove.Item2);
+
+                copyToTestForMate.testForCheck();
+                if (!copyToTestForMate.WhiteInCheck)
+                {
+                    ChessBoard.WhiteCheckMated = false;
+                    break;
+                }
+            }
+        }
+        if (ChessBoard.WhiteCheckMated)
+        {
+            messageToUser = "Black has won by checkmate";
+            gameOver = true;
+        }
+        if (ChessBoard.StaleMate)
+        {
+            messageToUser = "Game Over! Stalemate";
+            gameOver = true;
+        }
+    }
+}
