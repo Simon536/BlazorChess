@@ -510,7 +510,7 @@ namespace ChessEngine
         {
             if (piece == null)
             {
-                return "-";
+                return "\u3164";
             }
             switch (piece.pieceType)
             {
