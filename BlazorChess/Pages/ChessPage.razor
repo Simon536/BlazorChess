@@ -2,8 +2,6 @@
 @using ChessEngine
 @using System.ComponentModel
 
-@setup
-
 <PageTitle>Chess Engine</PageTitle>
 
 <h1>My Chess Engine</h1>
@@ -20,7 +18,7 @@
                 @onmouseover="(args) => MouseEnter(args, buttonNumber)"
                 @onclick="(args) => MouseClick(args, buttonNumber)"
                 id="b@(k+i)"
-                style="background-color:@(ChessBoard.Squares[i+k].bgColour);font-size:40px;height:60px;width:60px">
+                style="background-color:@(ChessBoard.Squares[i+k].bgColour);font-size:40px;height:65px;width:65px">
                     @(Board.GetPieceCode(ChessBoard.Squares[k+i].piece))
                 </button>
 
@@ -39,20 +37,12 @@
 
     bool gameOver = false;
 
+    string selectedSquareColour = "#f9a8a8";
+
     private BackgroundWorker bgThread = new BackgroundWorker();
+    bool bgWorkerSetup = false;
 
     private string messageToUser = "";
-
-    private void setup()
-    {
-        ChessBoard.WhosMove = ChessPieceColour.White;
-
-        //  Set up background worker
-        bgThread.WorkerReportsProgress = true;
-        bgThread.DoWork += new DoWorkEventHandler(worker_doWork);
-        bgThread.ProgressChanged += new ProgressChangedEventHandler(worker_UpdateProgress);
-        bgThread.RunWorkerCompleted += new RunWorkerCompletedEventHandler(worker_taskComplete);
-    }
 
     protected void MouseEnter(MouseEventArgs mouseEventArgs, byte buttonID)
     {
@@ -60,7 +50,7 @@
 
         foreach (byte m in openMoves)
         {
-            if (ChessBoard.Squares[m].bgColour != "f8adf2")
+            if (ChessBoard.Squares[m].bgColour != selectedSquareColour)
             {
                 ChessBoard.Squares[m].changeColour("#adf2f8");
             }
@@ -71,7 +61,7 @@
     {
         for (byte m = 0; m < 64; m++)
         {
-            if (ChessBoard.Squares[m].bgColour != "f8adf2")
+            if (ChessBoard.Squares[m].bgColour != selectedSquareColour)
             {
                 ChessBoard.Squares[m].changeColour("#dddddd");
             }
@@ -80,6 +70,16 @@
 
     protected void MouseClick(MouseEventArgs mouseEventArgs, byte buttonID)
     {
+        if (!bgWorkerSetup)
+        {
+            //  Set up background worker
+            bgThread.WorkerReportsProgress = true;
+            bgThread.DoWork += new DoWorkEventHandler(worker_doWork);
+            bgThread.ProgressChanged += new ProgressChangedEventHandler(worker_UpdateProgress);
+            bgThread.RunWorkerCompleted += new RunWorkerCompletedEventHandler(worker_taskComplete);
+            bgWorkerSetup = true;
+        }
+
         if (!bgThread.IsBusy && !gameOver && (ChessBoard.WhosMove == ChessPieceColour.White))
         {
             //  No piece is selected yet
@@ -95,7 +95,7 @@
                 if (piece != null && piece.pieceColour == ChessPieceColour.White)
                 {
                     //  Change button color
-                    ChessBoard.Squares[squareSelected].changeColour("f8adf2");
+                    ChessBoard.Squares[squareSelected].changeColour(selectedSquareColour);
 
                     //  Toggle pieceSelected
                     pieceSelected = true;
@@ -123,10 +123,12 @@
                         pieceSelected = false;
                         ChessBoard.WhosMove = ChessPieceColour.Black;
 
-                        //  Start worker
-                        //bgThread.RunWorkerAsync();
+                        messageToUser = "AI thinking...";
 
-                        AI.move(ChessBoard);
+                        //  Start worker
+                        bgThread.RunWorkerAsync();
+
+                        resetSquareColours();
 
                         ChessBoard.scoreBoard();
 
@@ -138,13 +140,7 @@
                     pieceSelected = false;
 
                     // Reset square colours
-                    for (byte i = 0; i < 64; i++)
-                    {
-                        if (ChessBoard.Squares[i].bgColour == "f8adf2")
-                        {
-                            ChessBoard.Squares[i].changeColour("#dddddd");
-                        }
-                    }
+                    resetSquareColours();
                 }
             }
         }
@@ -158,10 +154,18 @@
             {
                 messageToUser = "The game is already over!";
             }
-            if(ChessBoard.WhosMove == ChessPieceColour.Black)
+            if (ChessBoard.WhosMove == ChessPieceColour.Black)
             {
                 messageToUser = "It is Black's turn to move";
             }
+        }
+    }
+
+    void resetSquareColours()
+    {
+        for (byte i = 0; i < 64; i++)
+        {
+            ChessBoard.Squares[i].changeColour("#dddddd");
         }
     }
 
