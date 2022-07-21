@@ -44,6 +44,13 @@
 
     private string messageToUser = "";
 
+    // Any code that needs to run once on page load should go inside this function
+    protected override void OnInitialized()
+    {
+        resetSquareColours();
+        base.OnInitialized();
+    }
+
     protected void MouseEnter(MouseEventArgs mouseEventArgs, byte buttonID)
     {
         List<byte> openMoves = AI.getMoves(ChessBoard, buttonID);
