@@ -2,12 +2,6 @@
 
 namespace ChessEngine
 {
-    public enum moveType
-    {
-        Exact,
-        Max,
-        Min
-    }
 
     internal sealed class AI
     {
@@ -31,17 +25,11 @@ namespace ChessEngine
             numMaxCutoffs = 0;
             numMinCutoffs = 0;
 
-            //  Uncomment if you use option 1, below.
-            //int s;
 
             board.testForEndGamePhase();
 
             if (!board.EndGamePhase)
             {
-                //  Option 1. Slow
-                //Tuple<byte, byte> bMove = recursiveEvaluator(board, 4, ChessPieceColour.Black, out s);
-
-                //  Option 2. Fast
                 alphaBetaEvaluator(board, 4, ChessPieceColour.Black, int.MinValue, int.MaxValue, out bMove);
                 
 
@@ -49,10 +37,6 @@ namespace ChessEngine
             }
             else
             {
-                //  Option 1. Slow
-                //Tuple<byte, byte> bMove = recursiveEvaluator(board, 6, ChessPieceColour.Black, out s);
-
-                //  Option 2. Fast
                 alphaBetaEvaluator(board, 6, ChessPieceColour.Black, int.MinValue, int.MaxValue, out bMove);
 
                 MoveHandler.movePiece(board, bMove.Item1, bMove.Item2);
@@ -62,37 +46,6 @@ namespace ChessEngine
             stopwatch.Stop();
         }
 
-        private static Tuple<byte, byte> findBestMove(Board b, List<Tuple<byte, byte>> possibleMoves, ChessPieceColour colour, out int bestScore)
-        {
-            Board copyOfBoard;
-            Tuple<byte, byte> bestMove = new Tuple<byte, byte>(0,0);
-            bestScore = int.MaxValue;
-
-            if (colour == ChessPieceColour.White)
-            {
-                bestScore = int.MinValue;
-            }
-
-            foreach (Tuple<byte, byte> move in possibleMoves)
-            {
-                copyOfBoard = b.FastCopy();
-                MoveHandler.movePiece(copyOfBoard, move.Item1, move.Item2);
-                copyOfBoard.scoreBoard();
-
-                if (colour == ChessPieceColour.White && copyOfBoard.Score > bestScore)
-                {
-                    bestScore = copyOfBoard.Score;
-                    bestMove = move;
-                }
-                if (colour == ChessPieceColour.Black && copyOfBoard.Score < bestScore)
-                {
-                    bestScore = copyOfBoard.Score;
-                    bestMove = move;
-                }
-            }
-
-            return bestMove;
-        }
 
         /// <summary>
         /// Only use this for black.
@@ -932,161 +885,6 @@ namespace ChessEngine
             return new List<byte>();
         }
 
-        /// <summary>
-        /// Calls itself.
-        /// </summary>
-        /// <param name="b"></param>
-        /// <param name="depth"></param>
-        /// <param name="colourToMove"></param>
-        /// <param name="score"></param>
-        /// <returns></returns>
-        private static Tuple<byte, byte> recursiveEvaluator(Board b, sbyte depth, ChessPieceColour colourToMove, out int score)
-        {
-            List<byte> piecePos = getPiecePositions(b, colourToMove);
-            List<Tuple<byte, byte>> moves = getPossibleMoves(b, piecePos);
-
-            if (colourToMove == ChessPieceColour.White)
-            {
-                score = int.MinValue;
-            }
-            else
-            {
-                score = int.MaxValue;
-            }
-
-            //  The score of the move being evaluated
-            int currentScore;
-            Tuple<byte, byte> bestMove = new Tuple<byte, byte>(0,0);
-
-            if (depth > 1) {
-                //  First check for a matching hash
-                if (moveLookupTable[b.zobHash % sizeOfLookUpTable].hash == b.zobHash && moveLookupTable[b.zobHash % sizeOfLookUpTable].depth >= depth)
-                {
-                    numTimesMoveLookupWasUsed++;
-                    moveStruct thisMove = moveLookupTable[b.zobHash % sizeOfLookUpTable];
-
-                    if (thisMove.score > score && colourToMove == ChessPieceColour.White)
-                    {
-                        score = thisMove.score;
-                        bestMove = new Tuple<byte, byte>(thisMove.moveOrigin, thisMove.moveDestination);
-                    }
-                    if (thisMove.score < score && colourToMove == ChessPieceColour.Black)
-                    {
-                        score = thisMove.score;
-                        bestMove = new Tuple<byte, byte>(thisMove.moveOrigin, thisMove.moveDestination);
-                    }
-                }
-
-                //  If no hash, then evaluate, and save a hash
-                else
-                {
-                    foreach (Tuple<byte, byte> move in moves)
-                    {
-                        Board cpy = b.FastCopy();
-                        MoveHandler.movePiece(cpy, move.Item1, move.Item2);
-                        recursiveEvaluator(cpy, (sbyte)(depth - 1), Piece.oppositeColour(colourToMove), out currentScore);
-
-                        //  Test for check, mate, and stalemate
-                        cpy.testForCheck();
-                        //  Note: it is now white's move
-                        if (colourToMove == ChessPieceColour.Black && cpy.WhiteInCheck)
-                        {
-                            //  Test for checkmate
-                            List<byte> piecePos2 = getPiecePositions(cpy, colourToMove);
-                            List<Tuple<byte, byte>> moves2 = getPossibleMoves(cpy, piecePos2);
-
-                            //  Set white checkmated to true, before testing.
-                            cpy.WhiteCheckMated = true;
-
-                            foreach (Tuple<byte, byte> move2 in moves2)
-                            {
-                                Board cpy2 = cpy.FastCopy();
-                                MoveHandler.movePiece(cpy2, move2.Item1, move2.Item2);
-
-                                cpy2.testForCheck();
-
-                                if (cpy2.WhiteInCheck)
-                                {
-                                    continue;
-                                }
-                                else
-                                {
-                                    cpy.WhiteCheckMated = false;
-                                    break;
-                                }
-                            }
-
-                            if (cpy.WhiteCheckMated)
-                            {
-                                score = -10000;
-                            }
-                        }
-                        //  Note: it is now black's move
-                        if (colourToMove == ChessPieceColour.White && cpy.BlackInCheck)
-                        {
-                            //  Test for checkmate
-                            List<byte> piecePos2 = getPiecePositions(cpy, colourToMove);
-                            List<Tuple<byte, byte>> moves2 = getPossibleMoves(cpy, piecePos2);
-
-                            //  Set black checkmated to true, before testing.
-                            cpy.BlackCheckMated = true;
-
-                            foreach (Tuple<byte, byte> move2 in moves2)
-                            {
-                                Board cpy2 = cpy.FastCopy();
-                                MoveHandler.movePiece(cpy2, move2.Item1, move2.Item2);
-
-                                cpy2.testForCheck();
-
-                                if (cpy2.BlackInCheck)
-                                {
-                                    continue;
-                                }
-                                else
-                                {
-                                    cpy.BlackCheckMated = false;
-                                    break;
-                                }
-                            }
-
-                            if (cpy.BlackCheckMated)
-                            {
-                                score = 10000;
-                            }
-                        }
-
-                        if (currentScore > score && colourToMove == ChessPieceColour.White)
-                        {
-                            score = currentScore;
-                            bestMove = move;
-                        }
-                        if (currentScore < score && colourToMove == ChessPieceColour.Black)
-                        {
-                            score = currentScore;
-                            bestMove = move;
-                        }
-                    }
-
-                    //  Update hash data
-                    moveStruct thisMove;
-                    thisMove.depth = depth;
-                    thisMove.hash = b.zobHash;
-                    thisMove.score = score;
-                    thisMove.moveOrigin = bestMove.Item1;
-                    thisMove.moveDestination = bestMove.Item2;
-
-                    moveLookupTable[b.zobHash % sizeOfLookUpTable] = thisMove;
-                }
-            }
-            //  If depth == 1
-            if (depth == 1)
-            {
-                //  Depth 1 search
-                findBestMove(b, moves, colourToMove, out score);
-            }
-
-            return bestMove;
-        }
 
         private static int alphaBetaEvaluator(Board b, sbyte depth, ChessPieceColour colourToMove, int min, int max, out Tuple<byte, byte> bestMove)
         {
@@ -1179,17 +977,6 @@ namespace ChessEngine
         /// <param name="col">The column number (1 - 8)</param>
         /// <returns>The square number (0 - 63)</returns>
         private static byte coordsToNum(sbyte row, sbyte col)
-        {
-            byte square = (byte)(row * 8 - (8 - col) - 1);
-            return square;
-        }
-        /// <summary>
-        /// Simple utility function.
-        /// </summary>
-        /// <param name="row">The row number (1 - 8)</param>
-        /// <param name="col">The column number (1 - 8)</param>
-        /// <returns>The square number (0 - 63)</returns>
-        private static byte coordsToNum(byte row, byte col)
         {
             byte square = (byte)(row * 8 - (8 - col) - 1);
             return square;
