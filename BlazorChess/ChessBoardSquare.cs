@@ -13,20 +13,9 @@ namespace ChessEngine
             piece = null;
         }
 
-        internal Square(Piece piece1)
-        {
-            piece = new Piece(piece1);
-            bgColour = "#DDDDDD";
-        }
-
         internal void changeColour(string colour)
         {
             bgColour = colour;
-        }
-
-        internal string getColour()
-        {
-            return bgColour;
         }
     }
 }
