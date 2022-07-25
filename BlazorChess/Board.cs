@@ -43,50 +43,6 @@ namespace ChessEngine
             WhiteKingHasMoved = false;
         }
 
-        /// <summary>
-        /// Used to copy a board
-        /// </summary>
-        /// <param name="board"></param>
-        internal Board(Board board)
-        {
-            Squares = new Square[64];
-
-            for (byte x=0; x < 64; x++)
-            {
-                if (board.Squares[x].piece != null)
-                {
-                    Squares[x] = new Square(board.Squares[x].piece);
-                }
-            }
-
-            EndGamePhase = board.EndGamePhase;
-
-            WhiteHasCastled = board.WhiteHasCastled;
-            BlackHasCastled = board.BlackHasCastled;
-
-            BlackInCheck = board.BlackInCheck;
-            WhiteInCheck = board.WhiteInCheck;
-
-            StaleMate = board.StaleMate;
-
-            WhiteCheckMated = board.WhiteCheckMated;
-            BlackCheckMated = board.BlackCheckMated;
-
-            BlackKingHasMoved = board.BlackKingHasMoved;
-            WhiteKingHasMoved = board.WhiteKingHasMoved;
-
-            WhosMove = board.WhosMove;
-
-            Score = board.Score;
-
-            MoveCount = board.MoveCount;
-        }
-
-        internal Board(int score) : this()
-        {
-            Score = score;
-        }
-
         private Board(Square[] squares)
         {
             Squares = new Square[64];
@@ -107,8 +63,6 @@ namespace ChessEngine
             clonedBoard.EndGamePhase = EndGamePhase;
             clonedBoard.WhosMove = WhosMove;
             clonedBoard.MoveCount = MoveCount;
-            //clonedBoard.BlackHasCastled = BlackHasCastled;
-            //clonedBoard.WhiteHasCastled = WhiteHasCastled;
 
             clonedBoard.WhiteKingHasMoved = WhiteKingHasMoved;
             clonedBoard.BlackKingHasMoved = BlackKingHasMoved;
@@ -117,18 +71,6 @@ namespace ChessEngine
             clonedBoard.randomHash = randomHash;
 
             return clonedBoard;
-        }
-
-        internal byte getSquare(string blockName)
-        {
-            //  Remove 'b' from string
-            blockName = blockName.Remove(0, 1);
-
-            //  Convert string to byte
-            byte squareNum = Convert.ToByte(blockName);
-
-            //  Return the square
-            return squareNum;
         }
 
         /// <summary>
@@ -398,108 +340,6 @@ namespace ChessEngine
             }
         }
 
-        //  Legacy. Uses console.
-
-        /*internal static void PrintBoard(Board board)
-        {
-            Console.Clear();
-
-            string str = "";
-            int square = 0;
-            byte bgColour = 0;
-            ChessPieceColour pieceColour = ChessPieceColour.White;
-
-            board.testForCheck();
-            if (board.BlackInCheck)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Black is in check!");
-            }
-            if (board.WhiteInCheck)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("White is in check!");
-            }
-
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Moves: " + board.MoveCount);
-            board.scoreBoard();
-            Console.WriteLine("Approx score: " + board.Score);
-            Console.WriteLine("");
-            Console.ForegroundColor = ConsoleColor.White;
-
-            for (byte i = 0; i < 64; i++)
-            {
-                if (bgColour == 1)
-                {
-                    //  If it is a new row
-                    if (square == 0)
-                    {
-                        Console.BackgroundColor = ConsoleColor.Gray;
-                        bgColour = 1;
-                    }
-                    else
-                    {
-                        Console.BackgroundColor = ConsoleColor.White;
-                        bgColour = 0;
-                    }
-                }
-                else
-                {
-                    //  If it is a new row
-                    if (square == 0)
-                    {
-                        Console.BackgroundColor = ConsoleColor.White;
-                        bgColour = 0;
-                    }
-                    else
-                    {
-                        Console.BackgroundColor = ConsoleColor.Gray;
-                        bgColour = 1;
-                    }
-                }
-                if (board.Squares[i].piece != null)
-                {
-                    str = GetPieceCode(board.Squares[i].piece);
-
-                    //  Handle piece colour logic
-                    pieceColour = board.Squares[i].piece.pieceColour;
-                    if (pieceColour == ChessPieceColour.White)
-                        Console.ForegroundColor = ConsoleColor.DarkRed;
-                    else
-                        Console.ForegroundColor = ConsoleColor.Black;
-
-                    square++;
-                    if (square < 8)
-                    {
-                        Console.Write(str);
-                    }
-                    if (square == 8)
-                    {
-                        Console.WriteLine(str);
-                        square = 0;
-                    }
-                }
-                if (board.Squares[i].piece == null)
-                {
-                    str = " ";
-                    square++;
-                    if (square < 8)
-                    {
-                        Console.Write(str);
-                    }
-                    if (square == 8)
-                    {
-                        Console.WriteLine(str);
-                        square = 0;
-                    }
-                }
-            }
-
-            Console.BackgroundColor = ConsoleColor.Black;
-            Console.ForegroundColor = ConsoleColor.White;
-        }
-        */
 
         /// <summary>
         /// Now using Unicode :)
@@ -585,122 +425,6 @@ namespace ChessEngine
                         return "";
                     }
             }
-        }
-
-        /// <summary>
-        /// Get the letter that represents a specific piece.
-        /// </summary>
-        /// <param name="piece"></param>
-        /// <returns></returns>
-        public static string GetPieceLetter(Piece piece)
-        {
-            switch (piece.pieceType)
-            {
-                case ChessPieceType.Pawn:
-                    {
-                        if (piece.pieceColour == ChessPieceColour.Black)
-                        {
-                            return "p";
-                        }
-                        else
-                        {
-                            return "P";
-                        }
-                    }
-                case ChessPieceType.Rook:
-                    {
-                        if (piece.pieceColour == ChessPieceColour.Black)
-                        {
-                            return "r";
-                        }
-                        else
-                        {
-                            return "R";
-                        }
-                    }
-                case ChessPieceType.Knight:
-                    {
-                        if (piece.pieceColour == ChessPieceColour.Black)
-                        {
-                            return "n";
-                        }
-                        else
-                        {
-                            return "N";
-                        }
-                    }
-                case ChessPieceType.Bishop:
-                    {
-                        if (piece.pieceColour == ChessPieceColour.Black)
-                        {
-                            return "b";
-                        }
-                        else
-                        {
-                            return "B";
-                        }
-                    }
-                case ChessPieceType.King:
-                    {
-                        if (piece.pieceColour == ChessPieceColour.Black)
-                        {
-                            return "k";
-                        }
-                        else
-                        {
-                            return "K";
-                        }
-                    }
-                case ChessPieceType.Queen:
-                    {
-                        if (piece.pieceColour == ChessPieceColour.Black)
-                        {
-                            return "q";
-                        }
-                        else
-                        {
-                            return "Q";
-                        }
-                    }
-                default:
-                    {
-                        return "";
-                    }
-            }
-        }
-
-        public static Board loadBoardFromString(string stringToLoad)
-        {
-            Board b = new Board();
-
-            initRandHash(b);
-
-            byte square = 0;
-
-            foreach (char c in stringToLoad)
-            {
-                //  If the character is a number
-                if (char.IsDigit(c))
-                {
-                    //  Move the 'pointer' by the required number of squares.
-                    byte squaresToMove;
-                    byte.TryParse(c.ToString(), out squaresToMove);
-                    square += squaresToMove;
-                }
-                else
-                {
-                    if (c != '\r' && c != '\n')
-                    {
-                        //  Need to get the piece
-                        Piece tempPiece = new Piece(c.ToString());
-                        b.Squares[square].piece = tempPiece;
-                        square++;
-                    }
-                }
-
-            }
-
-            return b;
         }
 
         /// <summary>

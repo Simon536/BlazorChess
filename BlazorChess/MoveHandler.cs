@@ -7,15 +7,6 @@
         public byte moveOrigin;
         public byte moveDestination;
         public sbyte depth;
-
-        public moveStruct(ulong ZobHash, int moveScore, byte moveStartSquare, byte moveEndSquare, sbyte searchDepth)
-        {
-            hash = ZobHash;
-            score = moveScore;
-            moveOrigin = moveStartSquare;
-            moveDestination = moveEndSquare;
-            depth = searchDepth;
-        }
     }
 
     internal static class MoveHandler
@@ -136,17 +127,6 @@
             }
 
             return false;
-        }
-
-        private static byte coordsToNum (sbyte row, sbyte col)
-        {
-            byte square = (byte)(row * 8 - (8 - col) - 1);
-            return square;
-        }
-        private static byte coordsToNum(byte row, byte col)
-        {
-            byte square = (byte)(row * 8 - (8 - col) - 1);
-            return square;
         }
     }
 }
