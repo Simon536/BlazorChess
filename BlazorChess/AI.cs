@@ -1111,11 +1111,11 @@ namespace ChessEngine
 
                 if (b.WhiteInCheck)
                 {
-                    //  Test for checkmate here
+                    //  TODO: Test for checkmate here
                 }
                 if (b.BlackInCheck)
                 {
-                    //  Test for checkmate here
+                    //  TODO: Test for checkmate here
                 }
 
                 //  Look at every possible move
