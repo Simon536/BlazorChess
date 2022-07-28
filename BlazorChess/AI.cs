@@ -5,40 +5,24 @@ namespace ChessEngine
 
     internal sealed class AI
     {
-        private static ulong sizeOfLookUpTable = 20000;
-
         public static Stopwatch stopwatch = new Stopwatch();
-        public static Tuple<byte, byte> bMove;
-
-        public static moveStruct[] moveLookupTable = new moveStruct[sizeOfLookUpTable];
-        public static int numTimesMoveLookupWasUsed;
-
-        public static int numMaxCutoffs;
-        public static int numMinCutoffs;
+        public static Tuple<byte, byte>? bMove;
 
         public static void move(Board board)
         {
             stopwatch.Reset();
             stopwatch.Start();
 
-            numTimesMoveLookupWasUsed = 0;
-            numMaxCutoffs = 0;
-            numMinCutoffs = 0;
-
-
             board.testForEndGamePhase();
 
             if (!board.EndGamePhase)
             {
                 alphaBetaEvaluator(board, 4, ChessPieceColour.Black, int.MinValue, int.MaxValue, out bMove);
-                
-
                 MoveHandler.movePiece(board, bMove.Item1, bMove.Item2);
             }
             else
             {
                 alphaBetaEvaluator(board, 6, ChessPieceColour.Black, int.MinValue, int.MaxValue, out bMove);
-
                 MoveHandler.movePiece(board, bMove.Item1, bMove.Item2);
             }
 
@@ -886,7 +870,7 @@ namespace ChessEngine
         }
 
 
-        private static int alphaBetaEvaluator(Board b, sbyte depth, ChessPieceColour colourToMove, int min, int max, out Tuple<byte, byte> bestMove)
+        private static int alphaBetaEvaluator(Board b, sbyte depth, ChessPieceColour colourToMove, int min, int max, out Tuple<byte, byte>? bestMove)
         {
             bestMove = new Tuple<byte, byte>(0, 0);
 
