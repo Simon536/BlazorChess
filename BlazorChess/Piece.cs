@@ -24,7 +24,6 @@ namespace ChessEngine
         internal ChessPieceType pieceType;
 
         internal short pieceValue;
-        internal int ZobHashValue;
 
         internal short attackedValue;
         internal short defendedValue;
@@ -46,7 +45,6 @@ namespace ChessEngine
             pieceType = piece.pieceType;
             moved = piece.moved;
             pieceValue = piece.pieceValue;
-            ZobHashValue = piece.ZobHashValue;
 
             if (piece.validMoves != null)
             {
@@ -62,91 +60,6 @@ namespace ChessEngine
             validMoves = new Stack<byte>();
 
             pieceValue = calculatePieceValue(pieceType);
-            ZobHashValue = calculateZobHashValue(chessPiece, chessPieceColour);
-        }
-
-
-        /// <summary>
-        /// Use this to get the piece values for Zobrist Hashing
-        /// </summary>
-        /// <param name="pieceType"></param>
-        /// <param name="pieceColour"></param>
-        /// <returns>The piece value</returns>
-        public static int calculateZobHashValue(ChessPieceType pieceType, ChessPieceColour pieceColour)
-        {
-            switch (pieceType)
-            {
-                case ChessPieceType.Pawn:
-                    {
-                        if (pieceColour == ChessPieceColour.Black)
-                        {
-                            return 0;
-                        }
-                        else
-                        {
-                            return 64;
-                        }
-                    }
-                case ChessPieceType.Rook:
-                    {
-                        if (pieceColour == ChessPieceColour.Black)
-                        {
-                            return 128;
-                        }
-                        else
-                        {
-                            return 192;
-                        }
-                    }
-                case ChessPieceType.Knight:
-                    {
-                        if (pieceColour == ChessPieceColour.Black)
-                        {
-                            return 256;
-                        }
-                        else
-                        {
-                            return 320;
-                        }
-                    }
-                case ChessPieceType.Bishop:
-                    {
-                        if (pieceColour == ChessPieceColour.Black)
-                        {
-                            return 384;
-                        }
-                        else
-                        {
-                            return 448;
-                        }
-                    }
-                case ChessPieceType.Queen:
-                    {
-                        if (pieceColour == ChessPieceColour.Black)
-                        {
-                            return 512;
-                        }
-                        else
-                        {
-                            return 576;
-                        }
-                    }
-                case ChessPieceType.King:
-                    {
-                        if (pieceColour == ChessPieceColour.Black)
-                        {
-                            return 640;
-                        }
-                        else
-                        {
-                            return 704;
-                        }
-                    }
-                default:
-                    {
-                        return 0;
-                    }
-            }
         }
 
         private static short calculatePieceValue(ChessPieceType pieceType)
