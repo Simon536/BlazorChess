@@ -12,7 +12,7 @@
     internal static class MoveHandler
     {
         /// <summary>
-        /// Please note: this is also used by the AI. Hashing is done here.
+        /// Please note: this is also used by the AI
         /// </summary>
         /// <param name="board"></param>
         /// <param name="startingPos"></param>
@@ -22,45 +22,22 @@
         {
             if (board.Squares[startingPos].piece != null)
             {
-                //  Reverse the colur to move in the Zobrist hash. (Remember: XOR is its own inverse.)
-                board.zobHash ^= board.randomHash.Last();
-
-                if (board.Squares[endingPos].piece != null)
-                {
-                    //  Remove the captured piece from the hash
-                    board.zobHash ^= board.randomHash[board.Squares[endingPos].piece.ZobHashValue + endingPos];
-                }
-
                 //  Move piece
                 Piece movingPiece = board.Squares[startingPos].piece;
                 board.Squares[startingPos].piece = null;
                 board.Squares[endingPos].piece = movingPiece;
 
-                //  Handle hashing (undo starting pos and do ending pos)
-                board.zobHash ^= board.randomHash[movingPiece.ZobHashValue + startingPos];
-                board.zobHash ^= board.randomHash[movingPiece.ZobHashValue + endingPos];
-
                 //  Handle promotions (White)
                 if (endingPos < 8 && movingPiece.pieceType == ChessPieceType.Pawn)
                 {
-                    //  Undo hash
-                    board.zobHash ^= board.randomHash[movingPiece.ZobHashValue + endingPos];
                     //  Convert pawn to queen
                     board.Squares[endingPos].piece.pieceType = ChessPieceType.Queen;
-                    board.Squares[endingPos].piece.ZobHashValue = Piece.calculateZobHashValue(ChessPieceType.Queen, ChessPieceColour.White);
-                    //  Rehash (hardcoded value for white queen)
-                    board.zobHash ^= board.randomHash[576 + endingPos];
                 }
                 //  (Black)
                 if (endingPos > 55 && movingPiece.pieceType == ChessPieceType.Pawn)
                 {
-                    //  Undo hash
-                    board.zobHash ^= board.randomHash[movingPiece.ZobHashValue + endingPos];
                     //  Convert pawn to queen
                     board.Squares[endingPos].piece.pieceType = ChessPieceType.Queen;
-                    board.Squares[endingPos].piece.ZobHashValue = Piece.calculateZobHashValue(ChessPieceType.Queen, ChessPieceColour.Black);
-                    //  Rehash (hardcoded value for black queen)
-                    board.zobHash ^= board.randomHash[512 + endingPos];
                 }
 
                 //  Check if the king moved. Will be used to determine if castling is legal.
