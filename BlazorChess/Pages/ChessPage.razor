@@ -19,7 +19,7 @@
                 @onclick="(args) => MouseClick(args, buttonNumber)"
                 id="b@(k+i)"
                 style="background-color:@(ChessBoard.Squares[i+k].bgColour);font-size:45px;height:65px;width:65px">
-                    @(Board.GetPieceCode(ChessBoard.Squares[k+i].piece))
+                    @(ChessBoard.GetPieceCode(k+i))
                 </button>
 
             }
@@ -50,6 +50,7 @@
     protected override void OnInitialized()
     {
         resetSquareColours();
+        MoveHandler.initRayAttacks();
         base.OnInitialized();
     }
 

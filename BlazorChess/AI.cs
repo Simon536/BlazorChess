@@ -71,17 +71,24 @@ namespace ChessEngine
         {
             List<byte> myPieces = new List<byte>(16);
 
-            for (byte i = 0; i < 64; i++)
+            ulong pieces;
+
+            if (colour == ChessPieceColour.Black)
             {
-                if (b.Squares[i].piece != null)
-                {
-                    if (b.Squares[i].piece.pieceColour == colour)
-                    {
-                        myPieces.Add(i);
-                    }
-                }
+                ulong black = ~b.white;
+                pieces = b.occupied & black;
+            }
+            else
+            {
+                pieces = b.occupied & b.white;
             }
 
+            while (pieces != 0)
+            {
+                int sq = utils.bitScanForward(pieces);
+                myPieces.Add((byte)sq);
+                pieces = utils.clearBit(pieces, sq);
+            }
             return myPieces;
         }
 
