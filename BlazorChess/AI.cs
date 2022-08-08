@@ -221,83 +221,21 @@ namespace ChessEngine
                 //  ROOK
                 if (pieceType == ChessPieceType.Rook)
                 {
-                    byte finalPos;
+                    ulong moveMask = MoveHandler.getRayAttacks(b.occupied, directions.North, pos);
+                    moveMask |= MoveHandler.getRayAttacks(b.occupied, directions.South, pos);
+                    moveMask |= MoveHandler.getRayAttacks(b.occupied, directions.East, pos);
+                    moveMask |= MoveHandler.getRayAttacks(b.occupied, directions.West, pos);
 
-                    // Possible moves in the row (part 1)
-                    for (sbyte i = (sbyte)(col + 1); i <= 8; i++)
+                    if (pieceColour == ChessPieceColour.White)
                     {
-                        finalPos = (byte)(row * 8 - (8 - i) - 1);
-                        //  If the is a piece at the final position
-                        if (b.Squares[finalPos].piece != null)
-                        {
-                            //  If the piece belongs to the other team
-                            if (b.Squares[finalPos].piece.pieceColour != b.Squares[pos].piece.pieceColour)
-                                possibleMoves.Add(finalPos);
-                            break;
-                        }
-                        //  If there is not a piece
-                        else
-                        {
-                            possibleMoves.Add(finalPos);
-                        }
+                        moveMask &= ~(b.occupied & b.white);
                     }
-                    // Possible moves in the row (part 2)
-                    for (sbyte i = (sbyte)(col - 1); i >= 1; i--)
+                    else
                     {
-                        finalPos = (byte)(row * 8 - (8 - i) - 1);
-                        //  If the is a piece at the final position
-                        if (b.Squares[finalPos].piece != null)
-                        {
-                            //  If the piece belongs to the other team
-                            if (b.Squares[finalPos].piece.pieceColour != b.Squares[pos].piece.pieceColour)
-                                possibleMoves.Add(finalPos);
-                            break;
-                        }
-                        //  If there is not a piece
-                        else
-                        {
-                            possibleMoves.Add(finalPos);
-                        }
+                        moveMask &= ~(b.occupied & (~b.white));
                     }
 
-                    // Possible moves in the column (part 1)
-                    for (sbyte i = (sbyte)(row + 1); i <= 8; i++)
-                    {
-                        finalPos = (byte)(i * 8 - (8 - col) - 1);
-                        //  If the is a piece at the final position
-                        if (b.Squares[finalPos].piece != null)
-                        {
-                            //  If the piece belongs to the other team
-                            if (b.Squares[finalPos].piece.pieceColour != b.Squares[pos].piece.pieceColour)
-                                possibleMoves.Add(finalPos);
-                            break;
-                        }
-                        //  If there is not a piece
-                        else
-                        {
-                            possibleMoves.Add(finalPos);
-                        }
-                    }
-                    // Possible moves in the column (part 2)
-                    for (sbyte i = (sbyte)(row - 1); i >= 1; i--)
-                    {
-                        finalPos = (byte)(i * 8 - (8 - col) - 1);
-                        //  If the is a piece at the final position
-                        if (b.Squares[finalPos].piece != null)
-                        {
-                            //  If the piece belongs to the other team
-                            if (b.Squares[finalPos].piece.pieceColour != b.Squares[pos].piece.pieceColour)
-                                possibleMoves.Add(finalPos);
-                            break;
-                        }
-                        //  If there is not a piece
-                        else
-                        {
-                            possibleMoves.Add(finalPos);
-                        }
-                    }
-
-                    return possibleMoves;
+                    return utils.getSetBitIndices(moveMask);
                 }
                 //  END OF ROOK
 

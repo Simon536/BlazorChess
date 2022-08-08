@@ -178,7 +178,18 @@
         {
             ulong attacks = rayAttacks[(int)dir, square];
             ulong blockers = attacks & occupied;
-            int block = utils.bitScanForward(blockers | 0x8000000000000000); // Find location of first blocking piece
+            int block;
+
+            // Check if the direction is positive or not
+            if (dir == directions.South || dir == directions.East || dir == directions.SouthEast || dir == directions.SouthWest)
+            {
+                block = utils.bitScanForward(blockers | 0x8000000000000000); // Find location of first blocking piece
+            }
+            else
+            {
+                block = utils.bitScanReverse(blockers | 1); // Find location of first blocking piece
+            }
+
             return attacks ^ rayAttacks[(int)dir, block];
         }
 
