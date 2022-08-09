@@ -240,8 +240,6 @@ namespace ChessEngine
                 //  END OF ROOK
 
                 //  KNIGHT
-
-                //  Knight logic appears to be broken!
                 if (pieceType == ChessPieceType.Knight)
                 {
                     byte finalPos;
@@ -384,127 +382,21 @@ namespace ChessEngine
                 //  BISHOP
                 if (pieceType == ChessPieceType.Bishop)
                 {
-                    byte finalPos;
+                    ulong moveMask = MoveHandler.getRayAttacks(b.occupied, directions.NorthWest, pos);
+                    moveMask |= MoveHandler.getRayAttacks(b.occupied, directions.NorthEast, pos);
+                    moveMask |= MoveHandler.getRayAttacks(b.occupied, directions.SouthWest, pos);
+                    moveMask |= MoveHandler.getRayAttacks(b.occupied, directions.SouthEast, pos);
 
-                    //  Possible moves along up-right diagonal
-                    for (sbyte i = 1; i < 8; i++)
+                    if (pieceColour == ChessPieceColour.White)
                     {
-                        if (row - i >= 1 && col + i <= 8)
-                        {
-                            finalPos = coordsToNum((sbyte)(row - i), (sbyte)(col + i));
-
-                            if (b.Squares[finalPos].piece == null)
-                            {
-                                //  There is no piece on the square
-                                possibleMoves.Add(finalPos);
-                            }
-                            else
-                            {
-                                //  There is a piece on the square
-                                if (b.Squares[finalPos].piece.pieceColour != pieceColour)
-                                {
-                                    //  The piece can be captured
-                                    possibleMoves.Add(finalPos);
-                                    break;
-                                }
-                                else
-                                {
-                                    //  The piece is the same colour, so break immediately
-                                    break;
-                                }
-                            }
-                        }
+                        moveMask &= ~(b.occupied & b.white);
+                    }
+                    else
+                    {
+                        moveMask &= ~(b.occupied & (~b.white));
                     }
 
-                    //  Possible moves along up-left diagonal
-                    for (sbyte i = 1; i < 8; i++)
-                    {
-                        if (row - i >= 1 && col - i >= 1)
-                        {
-                            finalPos = coordsToNum((sbyte)(row - i), (sbyte)(col - i));
-
-                            if (b.Squares[finalPos].piece == null)
-                            {
-                                //  There is no piece on the square
-                                possibleMoves.Add(finalPos);
-                            }
-                            else
-                            {
-                                //  There is a piece on the square
-                                if (b.Squares[finalPos].piece.pieceColour != pieceColour)
-                                {
-                                    //  The piece can be captured
-                                    possibleMoves.Add(finalPos);
-                                    break;
-                                }
-                                else
-                                {
-                                    //  The piece is the same colour, so break immediately
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                    //  Possible moves along down-right diagonal
-                    for (sbyte i = 1; i < 8; i++)
-                    {
-                        if (row + i <= 8 && col + i <= 8)
-                        {
-                            finalPos = coordsToNum((sbyte)(row + i), (sbyte)(col + i));
-
-                            if (b.Squares[finalPos].piece == null)
-                            {
-                                //  There is no piece on the square
-                                possibleMoves.Add(finalPos);
-                            }
-                            else
-                            {
-                                //  There is a piece on the square
-                                if (b.Squares[finalPos].piece.pieceColour != pieceColour)
-                                {
-                                    //  The piece can be captured
-                                    possibleMoves.Add(finalPos);
-                                    break;
-                                }
-                                else
-                                {
-                                    //  The piece is the same colour, so break immediately
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                    //  Possible moves along down-left diagonal
-                    for (sbyte i = 1; i < 8; i++)
-                    {
-                        if (row + i <= 8 && col - i >= 1)
-                        {
-                            finalPos = coordsToNum((sbyte)(row + i), (sbyte)(col - i));
-
-                            if (b.Squares[finalPos].piece == null)
-                            {
-                                //  There is no piece on the square
-                                possibleMoves.Add(finalPos);
-                            }
-                            else
-                            {
-                                //  There is a piece on the square
-                                if (b.Squares[finalPos].piece.pieceColour != pieceColour)
-                                {
-                                    //  The piece can be captured
-                                    possibleMoves.Add(finalPos);
-                                    break;
-                                }
-                                else
-                                {
-                                    //  The piece is the same colour, so break immediately
-                                    break;
-                                }
-                            }
-                        }
-                    }
+                    return utils.getSetBitIndices(moveMask);
                 }
 
                 //  QUEEN
