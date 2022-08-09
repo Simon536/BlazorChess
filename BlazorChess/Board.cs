@@ -286,7 +286,7 @@ namespace ChessEngine
             //  Check if any black piece can attack the white king
             foreach (byte attacker in blackPieces)
             {
-                bool attackSuccessful = MoveHandler.validMove(this, attacker, whiteKing, ChessPieceColour.Black);
+                bool attackSuccessful = MoveHandler.validMove(this, attacker, whiteKing);
                 if (attackSuccessful)
                 {
                     WhiteInCheck = true;
@@ -317,7 +317,7 @@ namespace ChessEngine
             //  Check if any white piece can attack the black king
             foreach (byte attacker in whitePieces)
             {
-                bool attackSuccessful = MoveHandler.validMove(this, attacker, blackKing, ChessPieceColour.White);
+                bool attackSuccessful = MoveHandler.validMove(this, attacker, blackKing);
                 if (attackSuccessful)
                 {
                     BlackInCheck = true;

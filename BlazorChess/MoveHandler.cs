@@ -132,16 +132,10 @@
         /// <param name="ePos"></param>
         /// <param name="playerColour"></param>
         /// <returns>True if the move is valid (Does not test for check)</returns>
-        public static bool validMove(Board b, byte sPos, byte ePos, ChessPieceColour playerColour)
+        public static bool validMove(Board b, byte sPos, byte ePos)
         {
             Piece p = b.Squares[sPos].piece;
             Piece piece2Capture = b.Squares[ePos].piece;
-
-            //  Find the row and column for the starting and ending positions
-            sbyte sRow = (sbyte)(sPos / 8 + 1);
-            sbyte sCol = (sbyte)((sPos % 8) + 1);
-            sbyte eRow = (sbyte)(ePos / 8 + 1);
-            sbyte eCol = (sbyte)((ePos % 8) + 1);
 
             if (p == null)
             {

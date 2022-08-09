@@ -108,7 +108,7 @@
             //  A piece is already selected. This is the destination block...
             else
             {
-                bool thisMoveIsValid = MoveHandler.validMove(ChessBoard, squareSelected, buttonID, ChessPieceColour.White);
+                bool thisMoveIsValid = MoveHandler.validMove(ChessBoard, squareSelected, buttonID);
                 if (thisMoveIsValid)
                 {
                     Board copyOfBoard = ChessBoard.FastCopy();

@@ -1,4 +1,6 @@
-﻿namespace ChessEngine
+﻿using System.Numerics;
+
+namespace ChessEngine
 {
     static class utils
     {
@@ -21,15 +23,17 @@
         /// </summary>
         public static int popCount(ulong x)
         {
-            int count = 0;
+            //int count = 0;
 
-            while (x > 0)
-            {
-                count++;
-                x &= x - 1;  // Reset LS1B
-            }
+            //while (x > 0)
+            //{
+            //    count++;
+            //    x &= x - 1;  // Reset LS1B
+            //}
 
-            return count;
+            //return count;
+
+            return BitOperations.PopCount(x);
         }
 
         public static int bitScanForward(ulong x)
@@ -38,8 +42,10 @@
             {
                 return -1;
             }
-            ulong twoscomp = (~x) + 1;
-            return popCount((x & twoscomp) - 1);
+            //ulong twoscomp = (~x) + 1;
+            //return popCount((x & twoscomp) - 1);
+
+            return BitOperations.TrailingZeroCount(x);
         }
 
         /// <summary>
