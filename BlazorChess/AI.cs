@@ -25,6 +25,7 @@ namespace ChessEngine
             }
 
             MoveHandler.movePiece(board, bMove.Item1, bMove.Item2);
+            Console.WriteLine("AI has completed move search...");
 
             board.WhosMove = ChessPieceColour.White;
             stopwatch.Stop();
