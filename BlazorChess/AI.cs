@@ -872,8 +872,9 @@ namespace ChessEngine
 
         private static async Task<Tuple<int, Tuple<byte, byte>>> alphaBetaEvaluator(Board b, sbyte depth, ChessPieceColour colourToMove, int min, int max)
         {
-
-            await renderDelay();
+            if (depth > 2){
+                await renderDelay();
+            }
 
             Tuple<byte, byte> bestMove = new Tuple<byte, byte>(0, 0);
 
