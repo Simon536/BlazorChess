@@ -17,7 +17,6 @@ namespace ChessEngine
 
             if (!board.EndGamePhase)
             {
-                Console.WriteLine("Beginning move search...");
                 Tuple<int, Tuple<byte, byte>> result = await alphaBetaEvaluator(board, 4, ChessPieceColour.Black, int.MinValue, int.MaxValue);
                 bMove = result.Item2;
                 MoveHandler.movePiece(board, bMove.Item1, bMove.Item2);
@@ -27,8 +26,6 @@ namespace ChessEngine
                 bMove = alphaBetaEvaluator(board, 6, ChessPieceColour.Black, int.MinValue, int.MaxValue).Result.Item2;
                 MoveHandler.movePiece(board, bMove.Item1, bMove.Item2);
             }
-
-            Console.WriteLine("AI has completed move search...");
 
             board.WhosMove = ChessPieceColour.White;
             stopwatch.Stop();
@@ -876,8 +873,7 @@ namespace ChessEngine
 
         private static async Task<Tuple<int, Tuple<byte, byte>>> alphaBetaEvaluator(Board b, sbyte depth, ChessPieceColour colourToMove, int min, int max)
         {
-            if (depth > 3){
-                Console.WriteLine("About to delay...");
+            if (depth > 2){
                 await renderDelay();
             }
 
