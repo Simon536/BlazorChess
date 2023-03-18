@@ -17,14 +17,14 @@ namespace ChessEngine
 
             if (!board.EndGamePhase)
             {
-                alphaBetaEvaluator(board, 4, ChessPieceColour.Black, int.MinValue, int.MaxValue, out bMove);
-                MoveHandler.movePiece(board, bMove.Item1, bMove.Item2);
+                bMove = alphaBetaEvaluator(board, 4, ChessPieceColour.Black, int.MinValue, int.MaxValue).Result.Item2;
             }
             else
             {
-                alphaBetaEvaluator(board, 6, ChessPieceColour.Black, int.MinValue, int.MaxValue, out bMove);
-                MoveHandler.movePiece(board, bMove.Item1, bMove.Item2);
+                bMove = alphaBetaEvaluator(board, 6, ChessPieceColour.Black, int.MinValue, int.MaxValue).Result.Item2;
             }
+
+            MoveHandler.movePiece(board, bMove.Item1, bMove.Item2);
 
             board.WhosMove = ChessPieceColour.White;
             stopwatch.Stop();
@@ -870,15 +870,17 @@ namespace ChessEngine
         }
 
 
-        private static int alphaBetaEvaluator(Board b, sbyte depth, ChessPieceColour colourToMove, int min, int max, out Tuple<byte, byte>? bestMove)
+        private static async Task<Tuple<int, Tuple<byte, byte>>> alphaBetaEvaluator(Board b, sbyte depth, ChessPieceColour colourToMove, int min, int max)
         {
-            bestMove = new Tuple<byte, byte>(0, 0);
+
+            await renderDelay();
+
+            Tuple<byte, byte> bestMove = new Tuple<byte, byte>(0, 0);
 
             if (depth == 0)
             {
-                bestMove = null;
                 b.scoreBoard();
-                return b.Score;
+                return new Tuple<int, Tuple<byte, byte>>(b.Score, bestMove);
             }
             else
             {
@@ -907,16 +909,14 @@ namespace ChessEngine
                     Board cpy = b.FastCopy();
                     MoveHandler.movePiece(cpy, move.Item1, move.Item2);
 
-                    Tuple<byte, byte> tempMove;
-
-                    currentScore = alphaBetaEvaluator(cpy, (sbyte)(depth - 1), Piece.oppositeColour(colourToMove), min, max, out tempMove);
+                    currentScore = alphaBetaEvaluator(cpy, (sbyte)(depth - 1), Piece.oppositeColour(colourToMove), min, max).Result.Item1;
 
                     if (colourToMove == ChessPieceColour.White)
                     {
                         if (currentScore >= max)
                         {
                             bestMove = move;
-                            return max;
+                            return new Tuple<int, Tuple<byte, byte>>(max, bestMove);
                         }
                         if (currentScore > min)
                         {
@@ -929,7 +929,7 @@ namespace ChessEngine
                         if (currentScore <= min)
                         {
                             bestMove = move;
-                            return min;
+                            return new Tuple<int, Tuple<byte, byte>>(min, bestMove);
                         }
                         if (currentScore < max)
                         {
@@ -941,11 +941,11 @@ namespace ChessEngine
 
                 if (colourToMove == ChessPieceColour.White)
                 {
-                    return min;
+                    return new Tuple<int, Tuple<byte, byte>>(min, bestMove);
                 }
                 else
                 {
-                    return max;
+                    return new Tuple<int, Tuple<byte, byte>>(max, bestMove);
                 }
             }
         }
@@ -964,6 +964,12 @@ namespace ChessEngine
         {
             byte square = (byte)(row * 8 - (8 - col) - 1);
             return square;
+        }
+
+        private static async Task<int> renderDelay()
+        {
+            await Task.Delay(20);
+            return 0;
         }
     }
 }
