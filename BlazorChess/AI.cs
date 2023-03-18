@@ -872,7 +872,7 @@ namespace ChessEngine
 
         private static async Task<Tuple<int, Tuple<byte, byte>>> alphaBetaEvaluator(Board b, sbyte depth, ChessPieceColour colourToMove, int min, int max)
         {
-            if (depth > 2){
+            if (depth > 3){
                 await renderDelay();
             }
 
