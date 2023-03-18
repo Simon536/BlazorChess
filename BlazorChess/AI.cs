@@ -968,7 +968,7 @@ namespace ChessEngine
 
         private static async Task<int> renderDelay()
         {
-            await Task.Delay(20);
+            await Task.Delay(1);
             return 0;
         }
     }
