@@ -17,6 +17,7 @@ namespace ChessEngine
 
             if (!board.EndGamePhase)
             {
+                Console.WriteLine("Beginning move search...");
                 bMove = alphaBetaEvaluator(board, 4, ChessPieceColour.Black, int.MinValue, int.MaxValue).Result.Item2;
             }
             else
@@ -874,6 +875,7 @@ namespace ChessEngine
         private static async Task<Tuple<int, Tuple<byte, byte>>> alphaBetaEvaluator(Board b, sbyte depth, ChessPieceColour colourToMove, int min, int max)
         {
             if (depth > 3){
+                Console.WriteLine("About to delay...");
                 await renderDelay();
             }
 
