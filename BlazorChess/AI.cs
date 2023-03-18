@@ -8,7 +8,7 @@ namespace ChessEngine
         public static Stopwatch stopwatch = new Stopwatch();
         public static Tuple<byte, byte>? bMove;
 
-        public static void move(Board board)
+        public static async Task move(Board board)
         {
             stopwatch.Reset();
             stopwatch.Start();
@@ -18,14 +18,16 @@ namespace ChessEngine
             if (!board.EndGamePhase)
             {
                 Console.WriteLine("Beginning move search...");
-                bMove = alphaBetaEvaluator(board, 4, ChessPieceColour.Black, int.MinValue, int.MaxValue).Result.Item2;
+                Tuple<int, Tuple<byte, byte>> result = await alphaBetaEvaluator(board, 4, ChessPieceColour.Black, int.MinValue, int.MaxValue);
+                bMove = result.Item2;
+                MoveHandler.movePiece(board, bMove.Item1, bMove.Item2);
             }
             else
             {
                 bMove = alphaBetaEvaluator(board, 6, ChessPieceColour.Black, int.MinValue, int.MaxValue).Result.Item2;
+                MoveHandler.movePiece(board, bMove.Item1, bMove.Item2);
             }
 
-            MoveHandler.movePiece(board, bMove.Item1, bMove.Item2);
             Console.WriteLine("AI has completed move search...");
 
             board.WhosMove = ChessPieceColour.White;
